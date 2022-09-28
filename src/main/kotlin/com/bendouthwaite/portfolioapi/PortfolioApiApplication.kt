@@ -9,3 +9,5 @@ class PortfolioApiApplication
 fun main(args: Array<String>) {
 	runApplication<PortfolioApiApplication>(*args)
 }
+
+
