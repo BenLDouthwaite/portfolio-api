@@ -2,15 +2,37 @@ server:
   port: ${PORT:8080}
 
 spring:
-  datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+#  datasource:
+#    url: ${DATABASE_URL}
+#    username: ${DATABASE_USERNAME}
+#    password: ${DATABASE_PASSWORD}
 
   security:
     oauth2:
       client:
         registration:
           github:
-            client-id: ${OAUTH_GITHUB_ID}
-            client-secret:  ${OATUH_GITHUB_SECRET}
+#            client-id: ${OAUTH_GITHUB_ID}
+            clientId: ${OAUTH_GITHUB_ID}
+#            client-secret:  ${OATUH_GITHUB_SECRET}
+            clientSecret:  ${OAUTH_GITHUB_SECRET}
+            redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+              - user:email
+              - read:user
+
+app:
+  auth:
+    tokenSecret: 04ca023b39512e46d0c2cf4b48d5aac61d34302994c87ed4eff225dcf3b0a218739f3897051a057f9b846a69ea2927a587044164b7bae5e1306219d50b588cb1
+    tokenExpirationMsec: 864000000
+  cors:
+    allowedOrigins: http://localhost:3000,http://localhost:8080,http://localhost:3001,http://localhost:8081
+  oauth2:
+    # After successfully authenticating with the OAuth2 Provider,
+    # we'll be generating an auth token for the user and sending the token to the
+    # redirectUri mentioned by the client in the /oauth2/authorize request.
+    # We're not using cookies because they won't work well in mobile clients.
+    authorizedRedirectUris:
+      - http://localhost:3000/oauth2/redirect
+      - myandroidapp://oauth2/redirect
+      - myiosapp://oauth2/redirect
