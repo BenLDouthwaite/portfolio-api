@@ -23,8 +23,8 @@ class UserController(
 
     @RequestMapping("/user")
     @CrossOrigin
-    fun user(@AuthenticationPrincipal principal: OAuth2User): Map<String?, Any?>? {
-        return Collections.singletonMap("name", principal.getAttribute("name") ?: "Name not found")
+    fun user(@AuthenticationPrincipal userPrincipal: UserPrincipal): Map<String?, Any?>? {
+        return mapOf("name" to userPrincipal.name)
     }
 
     @GetMapping("/user/me")

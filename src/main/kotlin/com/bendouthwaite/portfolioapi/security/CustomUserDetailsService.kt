@@ -30,6 +30,7 @@ class CustomUserDetailsService(
     @Transactional
     fun loadUserById(id: Long): UserDetails {
         val user: User = userRepository.findById(id).orElseThrow { ResourceNotFoundException("User", "id", id) }
-        return UserPrincipal.create(user)
+        val userPrincipal = UserPrincipal.create(user)
+        return userPrincipal
     }
 }

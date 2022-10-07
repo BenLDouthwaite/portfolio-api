@@ -17,10 +17,10 @@ import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.stereotype.Service
 
 @Service
-class CustomOAuth2UserService : DefaultOAuth2UserService() {
-
+class CustomOAuth2UserService(
     @Autowired
-    private val userRepository: UserRepository? = null
+    private val userRepository: UserRepository
+) : DefaultOAuth2UserService() {
 
     @Throws(OAuth2AuthenticationException::class)
     override fun loadUser(oAuth2UserRequest: OAuth2UserRequest): OAuth2User {
@@ -47,9 +47,9 @@ class CustomOAuth2UserService : DefaultOAuth2UserService() {
         if (email == null) {
             email = "test@test.com"
         }
-        val userOptional = userRepository!!.findByEmail(email)
+        val userOptional = userRepository.findByEmail(email)
         var user: User
-        if (userOptional!!.isPresent) {
+        if (userOptional.isPresent) {
             user = userOptional.get()
             if (user.provider != AuthProvider.valueOf(oAuth2UserRequest.clientRegistration.registrationId)) {
                 throw OAuth2AuthenticationProcessingException(
@@ -77,12 +77,12 @@ class CustomOAuth2UserService : DefaultOAuth2UserService() {
         }
         user.email = email
         user.imageUrl = oAuth2UserInfo.imageUrl
-        return userRepository!!.save(user)
+        return userRepository.save(user)
     }
 
     private fun updateExistingUser(existingUser: User, oAuth2UserInfo: OAuth2UserInfo): User {
         existingUser.name = oAuth2UserInfo.name
         existingUser.imageUrl = oAuth2UserInfo.imageUrl
-        return userRepository!!.save(existingUser)
+        return userRepository.save(existingUser)
     }
 }

@@ -8,6 +8,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User
 
 class UserPrincipal(
     val id: Long?,
+
+    private val name: String = "default_name",
+
     val email: String = "test@test.com",
     private val password: String = "password",
     private val authorities: Collection<GrantedAuthority> = listOf()
@@ -41,6 +44,10 @@ class UserPrincipal(
         return authorities
     }
 
+    override fun getName(): String {
+        return name
+    }
+
     override fun getAttributes(): Map<String, Any> {
         return attributes!!
     }
@@ -49,15 +56,19 @@ class UserPrincipal(
         this.attributes = attributes
     }
 
-    override fun getName(): String {
-        return id.toString()
-    }
+//    override fun getName(): String {
+//        return id.toString()
+//    }
 
     companion object {
         fun create(user: User): UserPrincipal {
             val authorities = listOf<GrantedAuthority>(SimpleGrantedAuthority("ROLE_USER"))
+
+            val userName = user.name
+
             return UserPrincipal(
-                user.id!!,
+                user.id,
+                user.name ?: "Def_name",
                 user.email ?: "test@test.com",
                 user.password?: "password",
                 authorities
