@@ -8,20 +8,20 @@ import org.springframework.security.oauth2.core.user.OAuth2User
 
 class UserPrincipal(
     val id: Long?,
-
+    private val username: String,
     private val name: String = "default_name",
 
-    val email: String = "test@test.com",
-    private val password: String = "password",
     private val authorities: Collection<GrantedAuthority> = listOf()
 ) : OAuth2User, UserDetails {
     private var attributes: Map<String, Any>? = mapOf()
     override fun getPassword(): String {
-        return password
+        // TODO How can I delete this?
+        return "password"
     }
 
     override fun getUsername(): String {
-        return email
+        // TODO How can I delete this?
+        return username
     }
 
     override fun isAccountNonExpired(): Boolean {
@@ -63,14 +63,10 @@ class UserPrincipal(
     companion object {
         fun create(user: User): UserPrincipal {
             val authorities = listOf<GrantedAuthority>(SimpleGrantedAuthority("ROLE_USER"))
-
-            val userName = user.name
-
             return UserPrincipal(
                 user.id,
-                user.name ?: "Def_name",
-                user.email ?: "test@test.com",
-                user.password?: "password",
+                user.username,
+                user.name,
                 authorities
             )
         }

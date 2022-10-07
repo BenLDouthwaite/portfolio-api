@@ -1,31 +1,20 @@
 package com.bendouthwaite.portfolioapi.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.*
-import javax.validation.constraints.Email
-import javax.validation.constraints.NotNull
 
+// https://github.com/spring-guides/tut-spring-boot-kotlin#persistence-with-jpa
+// > Here we don’t use data classes with val properties because JPA is not designed to
+// > work with immutable classes or the methods generated automatically by data classes.
 @Entity
-@Table(name = "users", uniqueConstraints = [UniqueConstraint(columnNames = ["email"])])
-class User {
+@Table(name = "users")
+class User(
+    @Column(nullable = false)
+    val username: String,
+
+    @Column(nullable = false)
+    val name: String,
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
-
-    @Column(nullable = false)
-    var name: String? = null
-
-    @Column(nullable = false)
-    var email: @Email String? = null
-    var imageUrl: String? = null
-
-    @Column(nullable = false)
-    var emailVerified = false
-
-    @JsonIgnore
-    var password: String? = null
-
-    @Enumerated(EnumType.STRING)
-    var provider: @NotNull AuthProvider? = null
-    var providerId: String? = null
-}
+)

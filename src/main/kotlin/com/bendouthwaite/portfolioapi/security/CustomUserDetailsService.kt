@@ -10,9 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-/**
- * Created by rajeevkumarsingh on 02/08/17.
- */
 @Service
 class CustomUserDetailsService(
     @Autowired
@@ -21,9 +18,9 @@ class CustomUserDetailsService(
 
     @Transactional
     @Throws(UsernameNotFoundException::class)
-    override fun loadUserByUsername(email: String): UserDetails {
-        val user: User = userRepository.findByEmail(email)
-            .orElseThrow { UsernameNotFoundException("User not found with email : $email") }
+    override fun loadUserByUsername(username: String): UserDetails {
+        val user: User = userRepository.findByUsername(username)
+            .orElseThrow { UsernameNotFoundException("User not found with username : $username") }
         return UserPrincipal.create(user)
     }
 

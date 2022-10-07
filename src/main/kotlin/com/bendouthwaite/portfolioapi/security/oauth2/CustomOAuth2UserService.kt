@@ -1,12 +1,10 @@
 package com.bendouthwaite.portfolioapi.security.oauth2
 
-import com.bendouthwaite.portfolioapi.exception.OAuth2AuthenticationProcessingException
-import com.bendouthwaite.portfolioapi.model.AuthProvider
 import com.bendouthwaite.portfolioapi.model.User
 import com.bendouthwaite.portfolioapi.repository.UserRepository
 import com.bendouthwaite.portfolioapi.security.UserPrincipal
+import com.bendouthwaite.portfolioapi.security.oauth2.user.GithubOAuth2UserInfo
 import com.bendouthwaite.portfolioapi.security.oauth2.user.OAuth2UserInfo
-import com.bendouthwaite.portfolioapi.security.oauth2.user.OAuth2UserInfoFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.InternalAuthenticationServiceException
 import org.springframework.security.core.AuthenticationException
@@ -26,7 +24,7 @@ class CustomOAuth2UserService(
     override fun loadUser(oAuth2UserRequest: OAuth2UserRequest): OAuth2User {
         val oAuth2User = super.loadUser(oAuth2UserRequest)
         return try {
-            processOAuth2User(oAuth2UserRequest, oAuth2User)
+            processOAuth2User(oAuth2User)
         } catch (ex: AuthenticationException) {
             throw ex
         } catch (ex: Exception) {
@@ -35,54 +33,21 @@ class CustomOAuth2UserService(
         }
     }
 
-    private fun processOAuth2User(oAuth2UserRequest: OAuth2UserRequest, oAuth2User: OAuth2User): OAuth2User {
-        val oAuth2UserInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(
-            oAuth2UserRequest.clientRegistration.registrationId,
-            oAuth2User.attributes
-        )
-        //        if(StringUtils.isEmpty(oAuth2UserInfo.getEmail())) {
-//            throw new OAuth2AuthenticationProcessingException("Email not found from OAuth2 provider");
-//        }
-        var email = oAuth2UserInfo.email
-        if (email == null) {
-            email = "test@test.com"
-        }
-        val userOptional = userRepository.findByEmail(email)
-        var user: User
-        if (userOptional.isPresent) {
-            user = userOptional.get()
-            if (user.provider != AuthProvider.valueOf(oAuth2UserRequest.clientRegistration.registrationId)) {
-                throw OAuth2AuthenticationProcessingException(
-                    "Looks like you're signed up with " +
-                            user.provider + " account. Please use your " + user.provider +
-                            " account to login."
-                )
-            }
-            user = updateExistingUser(user, oAuth2UserInfo)
-        } else {
-            user = registerNewUser(oAuth2UserRequest, oAuth2UserInfo)
-        }
+    private fun processOAuth2User(oAuth2User: OAuth2User): OAuth2User {
+        val oAuth2UserInfo = GithubOAuth2UserInfo(oAuth2User.attributes)
+
+        // TODO - Configure to return the user principal directly, and enable config without DB
+        val userOptional = userRepository.findByUsername(oAuth2UserInfo.username)
+        val user: User = userOptional.orElse(registerNewUser(oAuth2UserInfo))
         return UserPrincipal.create(user, oAuth2User.attributes)
     }
 
-    private fun registerNewUser(oAuth2UserRequest: OAuth2UserRequest, oAuth2UserInfo: OAuth2UserInfo): User {
-        val user = User()
-        user.provider =
-            AuthProvider.valueOf(oAuth2UserRequest.clientRegistration.registrationId)
-        user.providerId = oAuth2UserInfo.id
-        user.name = oAuth2UserInfo.name
-        var email = oAuth2UserInfo.email
-        if (email == null) {
-            email = "test@test.com"
-        }
-        user.email = email
-        user.imageUrl = oAuth2UserInfo.imageUrl
+    private fun registerNewUser(oAuth2UserInfo: OAuth2UserInfo): User {
+        val user = User(
+            oAuth2UserInfo.username,
+            oAuth2UserInfo.name
+        )
         return userRepository.save(user)
     }
 
-    private fun updateExistingUser(existingUser: User, oAuth2UserInfo: OAuth2UserInfo): User {
-        existingUser.name = oAuth2UserInfo.name
-        existingUser.imageUrl = oAuth2UserInfo.imageUrl
-        return userRepository.save(existingUser)
-    }
 }

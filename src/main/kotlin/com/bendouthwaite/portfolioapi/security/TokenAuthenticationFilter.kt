@@ -29,6 +29,8 @@ class TokenAuthenticationFilter : OncePerRequestFilter() {
             val jwt = getJwtFromRequest(request)
             if (StringUtils.hasText(jwt) && tokenProvider!!.validateToken(jwt)) {
                 val userId = tokenProvider.getUserIdFromToken(jwt)
+
+                // TODO Handle where user is not found here in a better way than throwing exceptions?
                 val userDetails = customUserDetailsService!!.loadUserById(userId)
                 val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
                 authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
