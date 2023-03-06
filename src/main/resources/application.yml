@@ -2,15 +2,15 @@ server:
   port: ${PORT:8080}
 
 spring:
-  datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
-
+  autoconfigure:
+    exclude=: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
   security:
-    oauth2:
-      client:
-        registration:
-          github:
-            client-id: ${OAUTH_GITHUB_ID}
-            client-secret:  ${OATUH_GITHUB_SECRET}
+    user:
+      name: ${USERNAME}
+      password: ${PASSWORD}
+      roles: USER
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
